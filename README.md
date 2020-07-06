@@ -21,7 +21,7 @@ done<SRR_list.txt
 
 2. Preprocess for RNA-Seq data:
 
-    - Delete adapter sequence and do quality triming by [bbduk](https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/bbduk-guide/) using script [`02bbduk.sh`](scripts/02bbduk.sh)
+    - Delete adapter sequence and do quality triming by [BBDuk](https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/bbduk-guide/) using script [`02bbduk.sh`](scripts/02bbduk.sh)
     
 ```bash
 #Clean RNA-Seq fastq file by SRR ID in the SRR_list.txt
