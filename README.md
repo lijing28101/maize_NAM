@@ -35,3 +35,28 @@ done<SRR_list.txt
     - We used RefGen_v5 assembly for B73 downloaded from [MaizeGDB B73_v5](https://download.maizegdb.org/Zm-B73-REFERENCE-NAM-5.0/Zm-B73-REFERENCE-NAM-5.0.fa.gz). 
     - Other genome sequence for 25 NAM lines also downloaded from [MaizeGDB NAM-genomes](https://www.maizegdb.org/NAM_project).
     
+4. RNA-Seq alignment:
+    - We used Hisat2 to align RNA-Seq data to the genome sequence.
+    - We used samtools to convert sam file to bam file and sort bam file by location (by script [`03alignment.sh`](scripts/03alignment.sh)).
+    
+ ```bash
+ # RNA-Seq alignment by SRR ID in the SRR_list.txt
+while read line; do
+    ./03alignment.sh ${line};
+done<SRR_list.txt
+ ```
+ 
+ 5. Determine the stranded information:
+ 
+    - Many public data don't have detailed strand information for the RNA-Seq samples. We need to use different option for stranded-specific and unstranded libraries.
+    - In order to determine an RNA-Seq library stranded or not, we used `infer_experiment.py` in [RSeQC](http://rseqc.sourceforge.net/#infer-experiment-py) to check the strand specification for each library (by script [`04strand.sh`](scripts/04strand.sh)).
+    
+```bash
+# Determine strand specific by SRR ID in the SRR_list.txt, keep the strand information in the strand_info.txt.
+while read line; do
+    ./04strand.sh ${line};
+done<SRR_list.txt > strand_info.txt
+
+```
+    
+    
