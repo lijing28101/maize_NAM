@@ -51,12 +51,23 @@ done<SRR_list.txt
     - Many public data don't have detailed strand information for the RNA-Seq samples. We need to use different option for stranded-specific and unstranded libraries.
     - In order to determine an RNA-Seq library stranded or not, we used `infer_experiment.py` in [RSeQC](http://rseqc.sourceforge.net/#infer-experiment-py) to check the strand specification for each library (by script [`04strand.sh`](scripts/04strand.sh)).
     
-```bash
+ ```bash
 # Determine strand specific by SRR ID in the SRR_list.txt, keep the strand information in the strand_info.txt.
 while read line; do
     ./04strand.sh ${line};
 done<SRR_list.txt > strand_info.txt
-
 ```
+
+      In the strand_info.txt, --fr means read 1 comes from the forward strand, --rf means read 1 comes from the reverse strand. 
+  
+ 6. De novo transcriptome assembly:
+  
+    - Use the sorted BAM files with multiple transcript assemblers for genome guided transcript assembly:
+        - [StringTie](https://ccb.jhu.edu/software/stringtie/index.shtml): [`05stringtie.sh`](scripts/05stringtie.sh)
+        - [Cufflinks](http://cole-trapnell-lab.github.io/cufflinks/cuffdiff/): [`06cufflinks.sh`](scripts/06cufflinks.sh)
+        - [Class2](https://github.com/mourisl/CLASS): [`07class2.sh`](scripts/07class2.sh)
+        - [Strawberry](https://github.com/ruolin/strawberry): [`08strawberry.sh`](scripts/08strawberry.sh)
+        - [Trinity](https://github.com/trinityrnaseq/trinityrnaseq/wiki): [`09trinity.sh`](scripts/09trinity.sh)
+   
     
     
