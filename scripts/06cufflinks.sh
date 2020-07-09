@@ -3,6 +3,7 @@
 module load cufflinks
 
 line=$1
+#specific strand from strand_info.txt. Use fr-firststrand instead of fr-firststrand, fr-secondstrand instead of fr-secondstrand, fr-unstranded instead of non-strandeness.
 strand=$2
 bam=${line}_sorted.bam
 
