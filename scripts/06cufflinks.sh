@@ -8,7 +8,7 @@ strand=$2
 bam=${line}_sorted.bam
 
 cufflinks \
-   --output-dir ${line} \
+   --output-dir ${line}_cufflinks \
    --num-threads 16 \
    --library-type ${strand} \
    --verbose \
