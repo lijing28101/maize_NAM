@@ -1,5 +1,6 @@
 # Gene prediction, orphan identification and analysis for maize NAM line workflow:
 
+![Image of NAM line tree](figure/workflow.jpeg)
 
 ## De novo transcriptome assembly:
 
