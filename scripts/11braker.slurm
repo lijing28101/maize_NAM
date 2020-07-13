@@ -18,7 +18,6 @@ module load augustus/3.3.2-py3-openmpi3-gee2bjt
 module load bamtools/2.5.1-mgm42ro
 module load samtools/1.9-k6deoga
 module load ncbi-rmblastn/2.2.28-t52d4vp
-module load diamond/0.9.23-xqnzcyt
 module rm perl
 
 
