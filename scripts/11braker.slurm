@@ -8,8 +8,8 @@
 #SBATCH -o braker.o%j
 #SBATCH -e braker.e%j
 
-
-source /work/LAS/mash-lab/jing/bin/Anaconda3/etc/profile.d/conda.sh
+# To activate conda environment in a submitted job
+source /path/to/Anaconda3/etc/profile.d/conda.sh
 source ~/.bashrc
 conda activate mypy3.5
 
@@ -20,10 +20,10 @@ module load samtools/1.9-k6deoga
 module load ncbi-rmblastn/2.2.28-t52d4vp
 module rm perl
 
-
-export AUGUSTUS_CONFIG_PATH=/work/LAS/mash-lab/jing/bin/augustus/config
-export AUGUSTUS_BIN_PATH=/work/LAS/mash-lab/jing/bin/augustus/bin
-export AUGUSTUS_SCRIPTS_PATH=/work/LAS/mash-lab/jing/bin/augustus/scripts
+# export editable augustus path
+export AUGUSTUS_CONFIG_PATH=/path/to/augustus/config
+export AUGUSTUS_BIN_PATH=/path/to/bin/augustus/bin
+export AUGUSTUS_SCRIPTS_PATH=/path/to/augustus/scripts
 
 # Change the species name and genome for different lines
 braker.pl --cores=48 \
