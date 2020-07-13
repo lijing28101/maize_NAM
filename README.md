@@ -2,15 +2,17 @@
 
 ![Image of NAM line tree](figure/workflow.jpeg)
 
-## De novo transcriptome assembly:
+## Direct inference prediction:
+
+**Direct inference (DI):** Gene predictions inferred directly from alignment of RNA-Seq evidence to the genome, that is, from de novo transctiptomes.
 
 **De novo transcriptome assembly**: Create transcriptome directly from alignment of RNA-Seq without the aid of reference genome.
 
 1. Prepare RNA-Seq dataset:
 
-    - Use RNA-Seq dataset with known metadata from our collabrated lab for 25 NAM founder lines and B73.
-    - Download more RNA-Seq data for B73 from NCBI-SRA:
-        - Search RNA-Seq datasets for Zea mays subsp. mays (taxid:381124), filter Runs for Illumina, paired-end, B73, and exclude samples with miRNA-Seq, ncRNA-Seq, or RIP-Seq library strategies.
+    - Use RNA-Seq dataset (17-22 samples for each line) with known metadata from our collabrated lab for 25 NAM founder lines and B73.
+    - Download more RNA-Seq data (1438) for B73 from NCBI-SRA:
+        - Search RNA-Seq datasets for Zea mays subsp. mays (taxid:381124), filter runs for Illumina, paired-end, B73, and exclude samples with miRNA-Seq, ncRNA-Seq, or RIP-Seq library strategies.
         - Download metadata and SRR IDs from SRA Run Selector.
         - Download RNA-Seq samples by [`01downloadSRR.sh`](scripts/01downloadSRR.sh).
         
@@ -26,7 +28,7 @@ done<SRR_list.txt
     - Delete adapter sequence and do quality triming by [BBDuk](https://jgi.doe.gov/data-and-tools/bbtools/bb-tools-user-guide/bbduk-guide/) using script [`02bbduk.sh`](scripts/02bbduk.sh)
     
 ```bash
-#Clean RNA-Seq fastq file by SRR ID in the SRR_list.txt
+# Clean RNA-Seq fastq file by SRR ID in the SRR_list.txt
 while read line; do
     ./02bbduk.sh ${line};
 done<SRR_list.txt
@@ -48,10 +50,10 @@ while read line; do
 done<SRR_list.txt
  ```
  
- 5. Determine the stranded information:
+ 5. Determine the strandness information:
  
     - Many public data don't have detailed strand information for the RNA-Seq samples. We need to use different option for stranded-specific and unstranded libraries.
-    - In order to determine an RNA-Seq library stranded or not, we used `infer_experiment.py` in [RSeQC](http://rseqc.sourceforge.net/#infer-experiment-py) to check the strand specification for each library (by script [`04strand.sh`](scripts/04strand.sh)).
+    - In order to determine an RNA-Seq library have specific strand or not, we used `infer_experiment.py` in [RSeQC](http://rseqc.sourceforge.net/#infer-experiment-py) to check the strand specification for each library (by script [`04strand.sh`](scripts/04strand.sh)).
     
  ```bash
 # Determine strand specific by SRR ID in the SRR_list.txt, keep the strand information in the strand_info.txt.
@@ -60,7 +62,9 @@ while read line; do
 done<SRR_list.txt > strand_info.txt
 ```
 
-      In the strand_info.txt, --fr means read 1 comes from the forward strand, --rf means read 1 comes from the reverse strand. 
+      In the strand_info.txt, --fr means fr-secondstrand, --rf means fr-firststrand. 
+      
+![Image of strand](http://4.bp.blogspot.com/-Ocn91gy9E5M/UBc1emNFh9I/AAAAAAAAAVY/E6vmshsdeZ4/s1600/Project+log+(BU_HD)+(1).png)
   
  6. De novo transcriptome assembly:
   
@@ -73,28 +77,26 @@ done<SRR_list.txt > strand_info.txt
 
 ```bash
 # Prepare a file with a column of SRR ID and a column of strand information, seperate by space.
-# Different assembler may used different string to present the specific strand. 
-# For example, stringtie use --rf for fr-first strand, and --fr for fr-secondstrand.
+# Different assembler may used different string to present the specific strand. Strings used for each assemlier are shown in the scripts.
+# For example, stringtie use --rf for fr-firststrand, and --fr for fr-secondstrand.
 
 while read line; do
     ./05stringtie.sh ${line};
 done<stringtieSRR.txt
 ```
-        
    
- ## Ab Initio prediction:
+ ## Ab initio prediction:
 
-**Ab Initio**: Gene predictions based on signal detection and seqeunce information only.
+**Ab initio**: Gene predictions based on signal detection and seqeunce information only.
 
 1. Merge the sorted bam files in to a single file [`10mergeBAM.sh`](scripts/10mergeBAM.sh).
-2. Here we used braker for ab inito prediction [`11braker.slurm`](scripts/11braker.slurm).
+2. Here, we used braker for ab inito prediction [`11braker.slurm`](scripts/11braker.slurm).
 
     *Note: To run braker in hpc cluster, you should copy the AUGUSTUS BIN, SCRIPTS AND CONFIG folder to a path where you can edit, and export the path.*
 
     
-## Combine Direct Inference and ab Initio prediction:
+## Combine direct inference and ab initio prediction:
 
-**Direct Inference (DI):** Gene predictions inferred directly from alignment of RNA-Seq evidence to the genome, that is, from de novo transctiptomes.
 
 Here, we used [mikado v2.0.2](https://github.com/EI-CoreBioinformatics/mikado) to determine and select the best RNA-seq prediction, and combine with the ab initio prediction.
 
@@ -138,7 +140,7 @@ Here, we used [mikado v2.0.2](https://github.com/EI-CoreBioinformatics/mikado) t
     
     In our study, we want to predict orphan genes (species specific genes), which may have short CDS. So we revise the scoring file (plant.yaml), change the cutoff to cdna or cds length to 150nt.
 
-3. We got mikado_prepared.fasta from step 2, and then used the file to predict ORFs by [TransDecoder](https://github.com/TransDecoder/TransDecoder/) ([`14transdecoder.slurm`](scripts/14transdecoder.slurm)).
+3. We got mikado_prepared.fasta from step 2, and then used the file to find ORFs by [TransDecoder](https://github.com/TransDecoder/TransDecoder/) ([`14transdecoder.slurm`](scripts/14transdecoder.slurm)).
 
     *Note: Mikado assume the ORFs information have high quality. However, transdecoder may predict some incomplete ORFs (lack of start or stop codon). We choose the padding option in mikado, it extends the shorter sequence to have the same length as longer one in the same locus, and may cause adding 3' UTR or 5' UTR on the incomplete ORFs. After comparing several options for mikado and transdecoder, we decided to keep only transcripts with complete ORFs for training and prediction in transdecoder. Therefore, we only got complete ORFs to use in mikado.*
     
@@ -152,20 +154,25 @@ Here, we used [mikado v2.0.2](https://github.com/EI-CoreBioinformatics/mikado) t
    mikado.loci.gff3
    ```
  
- 5. Since we used unmasked genome, the predicted gene model may include TE sequence. We used [TEsorter](https://github.com/NBISweden/TEsorter) to identify and filter out TE sequence transcripts ([`16TEsoeter.sh`](scripts/16TEsoeter.sh)). 
+5. Even though mikado remove some redundant transcripts in the prepare step, it still produce some redundant transcripts, which may not have exactly same transctipt seqeunce but have same CDS. We use cd-hit to identify these redundant sequence ([`16cd-hit.sh`](scripts/16cd-hit.sh)).
+
+   Here, we got a final gene models gff3 file (`final.gff3`).
+   
+   
+ ## TE screening:  
  
-    Here, we got a list of transcript ID (`TE-trans.txt`) matched to TE sequence. 
+ Since we used unmasked genome, the predicted gene model may include TE sequence. We used [TEsorter](https://github.com/NBISweden/TEsorter) to identify and filter out TE sequence transcripts ([`17TEsoeter.sh`](scripts/17TEsoeter.sh)). 
  
- 6. Even though mikado remove some redundant transcripts in the prepare step, it still produce some redundant transcripts, which may not have exactly same transctipt seqeunce but have same CDS. We use [cd-hit](http://weizhongli-lab.org/cd-hit/) to identify these redundant sequence ([`17cd-hit.sh`](scripts/17cd-hit.sh)).
+ Here, we got a list of transcript ID (`TE-trans.txt`) matched to TE sequence. 
  
-    Here, we got a list of non-redundant transctripts.
+
     
  
 ## Quantification of predicted CDS seqeunce:
 
 We used [salmon](https://salmon.readthedocs.io/en/latest/index.html) to qunatify predicted CDS sequence in each RNA-Seq samples.
 
-   *Note: Although we identified TE matched sequence, we still used all sequence from mikado to do quantification and phylostrata analysis. Therefore, we can compare the difference between TE-matched sequence and other sequence.
+   *Note: Although we identified TE matched sequence, we still used all sequence from final.gff3 to do quantification and phylostrata analysis. Therefore, we can compare the difference between TE-matched sequence and other sequence.*
    
 1. Create a salmon index by [`18salmon_index.sh`](scripts/18salmon_index.sh)
 
@@ -180,7 +187,7 @@ We used [salmon](https://salmon.readthedocs.io/en/latest/index.html) to qunatify
     # Each RNA-Seq samples have an output folder, we used the TPM in quant.sf for future analysis.
     ```
 
-## phylostrata analysis of predicted protein seqeunce:    
+## Phylostrata analysis of predicted protein seqeunce:    
 
 We used [phylostratr](https://github.com/arendsee/phylostratr) to assign an age to each predicted protein sequence. The phylogenic tree for maize NAM line could be found in [`NAM.tree`](data/NAM.tree). The script can be found here: [`20phylo.R`](scripts/20phylo.R)
 
