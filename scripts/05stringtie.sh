@@ -11,4 +11,4 @@ stringtie \
    ${strand} \
    -p 16 \
    -v \
-   -o ${line}_cufflinks.gtf
+   -o ${line}_stringtie.gtf
